@@ -1,0 +1,8 @@
+README.md
+ai_workshop.py
+pyproject.toml
+ai_workshop.egg-info/PKG-INFO
+ai_workshop.egg-info/SOURCES.txt
+ai_workshop.egg-info/dependency_links.txt
+ai_workshop.egg-info/requires.txt
+ai_workshop.egg-info/top_level.txt
