@@ -9,12 +9,6 @@ This service provides an API interface for the AI Workshop functionality.
 pip install -e .
 ```
 
-2. Set up environment variables:
-Create a `.env` file in the root directory with:
-```
-AF_ONELINK_TOKEN=your_token_here
-```
-
 ## Running the Service
 
 Run the service using uvicorn:
