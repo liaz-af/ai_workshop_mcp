@@ -1,99 +1,143 @@
 from typing import Any
-import httpx
 from mcp.server.fastmcp import FastMCP
-import logging  # Add this import for logging
-import os
+import logging
+import random
 
 # Initialize FastMCP server
 mcp = FastMCP("ai_workshop")
 
-# Constants
-AI_WORKSHOP_BASE = "https://onelink.appsflyer.com/shortlink/v1"
-USER_AGENT = "ai_workshop-app/1.0"
-
-HEADERS = {
-    "User-Agent": USER_AGENT,
-    "Content-Type": "application/json",
-    "accept": "application/json",
-    "authorization": os.environ.get('AF_ONELINK_TOKEN', '')  # Replace with your actual key or inject at runtime
-}
-
 # Configure logging to output to stdout
 logging.basicConfig(
-    level=logging.INFO,              # Log level
-    format="%(asctime)s - %(levelname)s - %(message)s",  # Log format
-    handlers=[logging.StreamHandler()]  # Output logs to stdout
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()]
 )
 logging.debug("Logging system initialized.")
 
-async def call_ai_workshop(method: str, endpoint: str, params: dict[str, Any] = None, json: dict[str, Any] = None) -> Any:
-    """Generic request handler for the AI Workshop API."""
-    # Log the incoming parameters
-    logging.info(f"Method: {method}, Endpoint: {endpoint}, Params: {params}, JSON: {json}")
-    
-    async with httpx.AsyncClient() as client:
-        url = f"{AI_WORKSHOP_BASE}/{endpoint}"
-        try:
-            response = await client.request(method, url, headers=HEADERS, params=params, json=json, timeout=30.0)
-            response.raise_for_status()
-            if method.upper() == "GET":
-                return response.json()
-            else:
-                return response.text
-        except httpx.HTTPStatusError as e:
-            return f"Error {e.response.status_code}: {e.response.text}"
-        except Exception as e:
-            return f"Unexpected error: {str(e)}"
+# Halloween costume database
+HALLOWEEN_COSTUMES = {
+    "classic": [
+        "Vampire", "Witch", "Ghost", "Zombie", "Skeleton", "Frankenstein's Monster",
+        "Mummy", "Werewolf", "Devil", "Angel", "Pirate", "Ninja"
+    ],
+    "pop_culture": [
+        "Superhero (Batman, Superman, Spider-Man)", "Disney Character", "Star Wars Character",
+        "Harry Potter Character", "Marvel Character", "Anime Character", "Video Game Character",
+        "Movie Character", "TV Show Character", "Celebrity"
+    ],
+    "creative": [
+        "Robot", "Alien", "Time Traveler", "Mad Scientist", "Steampunk Character",
+        "Cyberpunk Character", "Fairy", "Elf", "Wizard", "Knight", "Princess",
+        "Queen", "King", "Jester", "Clown", "Mime"
+    ],
+    "couples": [
+        "Bonnie and Clyde", "Romeo and Juliet", "Batman and Catwoman",
+        "Mario and Luigi", "Salt and Pepper", "Sun and Moon",
+        "Day and Night", "Yin and Yang", "Thing 1 and Thing 2"
+    ],
+    "group": [
+        "The Avengers", "The Justice League", "The Powerpuff Girls",
+        "The Teenage Mutant Ninja Turtles", "The Spice Girls", "The Breakfast Club",
+        "The Scooby-Doo Gang", "The Ghostbusters", "The X-Men"
+    ],
+    "scary": [
+        "Pennywise the Clown", "Freddy Krueger", "Jason Voorhees", "Michael Myers",
+        "Chucky", "Annabelle", "The Ring Girl", "The Grudge", "Leatherface",
+        "Jigsaw", "Ghostface", "The Babadook"
+    ],
+    "cute": [
+        "Pumpkin", "Black Cat", "Witch's Cat", "Broomstick", "Candy Corn",
+        "Trick-or-Treater", "Baby Ghost", "Little Devil", "Fairy", "Butterfly",
+        "Ladybug", "Bumblebee", "Unicorn", "Rainbow"
+    ]
+}
 
 @mcp.tool()
-async def create_ai_workshop(ai_workshop_id: str, data: dict[str, Any], brand_domain: str = None, ttl: str = None, shortlink_id: str = None) -> str:
-    """Create an AI Workshop attribution link."""
-    # Log the incoming parameters
-    logging.info(f"create_ai_workshop called with ai_workshop_id: {ai_workshop_id}, data: {data}, brand_domain: {brand_domain}, ttl: {ttl}, shortlink_id: {shortlink_id}")
+async def suggest_halloween_costume(
+    age: str = "adult",
+    gender: str = "any", 
+    style: str = "any",
+    group_size: int = 1,
+    scary_level: str = "medium"
+) -> str:
+    """
+    Suggest Halloween costume ideas based on preferences.
     
-    payload = {
-        "data": data
+    Args:
+        age: Age group - "child", "teen", "adult", "senior"
+        gender: Gender preference - "male", "female", "any"
+        style: Costume style - "classic", "pop_culture", "creative", "scary", "cute", "any"
+        group_size: Number of people (1 for individual, 2+ for group costumes)
+        scary_level: Scare level - "low", "medium", "high"
+    
+    Returns:
+        Halloween costume suggestion with details
+    """
+    logging.info(f"Halloween costume suggestion requested: age={age}, gender={gender}, style={style}, group_size={group_size}, scary_level={scary_level}")
+    
+    # Filter costumes based on preferences
+    available_categories = []
+    
+    if style == "any":
+        available_categories = list(HALLOWEEN_COSTUMES.keys())
+    else:
+        available_categories = [style]
+    
+    # Adjust for scary level
+    if scary_level == "low":
+        available_categories = [cat for cat in available_categories if cat not in ["scary"]]
+    elif scary_level == "high":
+        available_categories = ["scary"] if "scary" in available_categories else available_categories
+    
+    # Handle group costumes
+    if group_size > 1:
+        if "group" in available_categories:
+            available_categories = ["group"]
+        elif "couples" in available_categories and group_size == 2:
+            available_categories = ["couples"]
+    
+    # Select random category and costume
+    if not available_categories:
+        available_categories = ["classic"]
+    
+    selected_category = random.choice(available_categories)
+    selected_costume = random.choice(HALLOWEEN_COSTUMES[selected_category])
+    
+    # Generate suggestion with details
+    suggestion = f"🎃 Halloween Costume Suggestion 🎃\n\n"
+    suggestion += f"**Costume:** {selected_costume}\n"
+    suggestion += f"**Category:** {selected_category.replace('_', ' ').title()}\n"
+    suggestion += f"**Age Group:** {age.title()}\n"
+    suggestion += f"**Scary Level:** {scary_level.title()}\n"
+    
+    if group_size > 1:
+        suggestion += f"**Group Size:** {group_size} people\n"
+    
+    # Add costume tips based on category
+    tips = {
+        "classic": "Classic costumes are timeless and easy to find at costume stores!",
+        "pop_culture": "Make sure to get the details right - accessories and makeup are key!",
+        "creative": "This is your chance to be unique and creative with DIY elements!",
+        "scary": "Focus on makeup and special effects to maximize the scare factor!",
+        "cute": "Keep it adorable with bright colors and fun accessories!",
+        "couples": "Coordinate your costumes for maximum impact!",
+        "group": "Plan ahead to make sure everyone has their costume ready!"
     }
-    if brand_domain:
-        payload["brand_domain"] = brand_domain
-    if ttl:
-        payload["ttl"] = ttl
-    params = {"id": shortlink_id} if shortlink_id else {}
-    return await call_ai_workshop("POST", ai_workshop_id, params=params, json=payload)
-
-@mcp.tool()
-async def get_ai_workshop(ai_workshop_id: str, shortlink_id: str) -> str:
-    """Get details of an AI Workshop."""
-    # Log the incoming parameters
-    logging.info(f"get_ai_workshop called with ai_workshop_id: {ai_workshop_id}, shortlink_id: {shortlink_id}")
     
-    params = {"id": shortlink_id}
-    return await call_ai_workshop("GET", ai_workshop_id, params=params)
-
-@mcp.tool()
-async def update_ai_workshop(ai_workshop_id: str, shortlink_id: str, data: dict[str, Any], brand_domain: str = None, ttl: str = None) -> str:
-    """Update an AI Workshop attribution link."""
-    # Log the incoming parameters
-    logging.info(f"update_ai_workshop called with ai_workshop_id: {ai_workshop_id}, shortlink_id: {shortlink_id}, data: {data}, brand_domain: {brand_domain}, ttl: {ttl}")
+    if selected_category in tips:
+        suggestion += f"\n**💡 Tip:** {tips[selected_category]}\n"
     
-    payload = {
-        "data": data
-    }
-    if brand_domain:
-        payload["brand_domain"] = brand_domain
-    if ttl:
-        payload["ttl"] = ttl
-    params = {"id": shortlink_id}
-    return await call_ai_workshop("PUT", ai_workshop_id, params=params, json=payload)
-
-@mcp.tool()
-async def delete_ai_workshop(ai_workshop_id: str, shortlink_id: str) -> str:
-    """Delete an AI Workshop attribution link."""
-    # Log the incoming parameters
-    logging.info(f"delete_ai_workshop called with ai_workshop_id: {ai_workshop_id}, shortlink_id: {shortlink_id}")
+    # Add age-appropriate suggestions
+    if age == "child":
+        suggestion += "\n**Child-Friendly Note:** Make sure the costume is comfortable and safe for trick-or-treating!"
+    elif age == "teen":
+        suggestion += "\n**Teen Note:** This is a great age to experiment with makeup and special effects!"
+    elif age == "adult":
+        suggestion += "\n**Adult Note:** Consider comfort if you'll be wearing it for a long time!"
     
-    params = {"id": shortlink_id}
-    return await call_ai_workshop("DELETE", ai_workshop_id, params=params)
+    logging.info(f"Suggested costume: {selected_costume} from category {selected_category}")
+    
+    return suggestion
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
