@@ -138,6 +138,37 @@ async def suggest_halloween_costume(
     
     return suggestion
 
+@mcp.resource("halloween://costume-inventory")
+async def costume_inventory() -> str:
+    """
+    Halloween costume inventory resource.
+    
+    This resource provides access to the complete Halloween costume database,
+    organized by categories. Perfect for browsing all available costume options
+    or understanding the full range of choices available.
+    
+    Returns:
+        Complete Halloween costume inventory organized by categories
+    """
+    inventory = "# 🎃 Halloween Costume Inventory 🎃\n\n"
+    inventory += "Browse our complete collection of Halloween costumes organized by category:\n\n"
+    
+    for category, costumes in HALLOWEEN_COSTUMES.items():
+        inventory += f"## {category.replace('_', ' ').title()} Costumes\n\n"
+        
+        # Group costumes for better readability
+        for i, costume in enumerate(costumes, 1):
+            inventory += f"{i}. {costume}\n"
+        
+        inventory += "\n"
+    
+    inventory += "---\n\n"
+    inventory += "**Total Costumes Available:** " + str(sum(len(costumes) for costumes in HALLOWEEN_COSTUMES.values())) + "\n"
+    inventory += "**Categories:** " + str(len(HALLOWEEN_COSTUMES)) + "\n\n"
+    inventory += "Use the `suggest_halloween_costume` tool to get personalized recommendations based on your preferences! 👻"
+    
+    return inventory
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == "--http":
