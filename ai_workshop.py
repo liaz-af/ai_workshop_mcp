@@ -169,6 +169,68 @@ async def costume_inventory() -> str:
     
     return inventory
 
+@mcp.prompt()
+def halloween_costume_prompts() -> str:
+    """
+    Get interactive prompts to help choose the perfect Halloween costume.
+    
+    This prompt provides a series of questions and prompts to guide users through
+    the costume selection process. Perfect for those who need help deciding
+    what to be for Halloween!
+    
+    Returns:
+        Interactive prompts and questions for costume selection
+    """
+    prompts = """
+# 🎃 Halloween Costume Selection Prompts 🎃
+
+Let's find your perfect Halloween costume! Answer these questions to get personalized suggestions:
+
+## 1. Age & Comfort Level
+- Are you dressing up as a child, teen, adult, or senior?
+- Do you prefer comfortable costumes or are you okay with elaborate ones?
+- Will you be walking around a lot (trick-or-treating, parties)?
+
+## 2. Style Preferences
+- **Classic**: Traditional Halloween costumes (vampire, witch, ghost)
+- **Pop Culture**: Characters from movies, TV, games, books
+- **Creative**: Unique, DIY, or artistic costumes
+- **Scary**: Horror movie characters and frightening costumes
+- **Cute**: Adorable, fun, and family-friendly costumes
+
+## 3. Group or Solo?
+- Are you dressing up alone or with others?
+- If with others: couples costume or group theme?
+- Do you want to coordinate with friends/family?
+
+## 4. Scare Factor
+- **Low**: Family-friendly, not scary at all
+- **Medium**: Somewhat spooky but not terrifying
+- **High**: Maximum scare factor for adults only
+
+## 5. Budget & Time
+- How much time do you have to prepare?
+- What's your budget range?
+- Do you prefer store-bought or DIY costumes?
+
+## 6. Special Considerations
+- Any allergies to makeup or materials?
+- Will you be indoors or outdoors?
+- Do you need to eat/drink while wearing the costume?
+
+---
+
+**Next Steps:**
+1. Answer these questions for yourself
+2. Use the `suggest_halloween_costume` tool with your preferences
+3. Browse the costume inventory resource for more options
+4. Get creative and have fun! 👻
+
+**Pro Tip:** Don't be afraid to mix and match ideas or put your own spin on classic costumes!
+"""
+    
+    return prompts
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1 and sys.argv[1] == "--http":
